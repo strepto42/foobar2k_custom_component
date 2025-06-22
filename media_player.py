@@ -11,8 +11,8 @@ from homeassistant.components.media_player import (
 
 # https://github.com/home-assistant/home-assistant/blob/dev/homeassistant/components/media_player/const.py
 from homeassistant.components.media_player.const import (
-    SUPPORT_TURN_ON, SUPPORT_TURN_OFF, SUPPORT_PLAY_MEDIA, MediaPlayerEntityFeature, 
-    MEDIA_TYPE_MUSIC, ATTR_APP_NAME, ATTR_MEDIA_ALBUM_ARTIST, ATTR_MEDIA_ALBUM_NAME, ATTR_MEDIA_DURATION, ATTR_MEDIA_PLAYLIST,
+    MediaPlayerEntityFeature, MediaType,
+    ATTR_APP_NAME, ATTR_MEDIA_ALBUM_ARTIST, ATTR_MEDIA_ALBUM_NAME, ATTR_MEDIA_DURATION, ATTR_MEDIA_PLAYLIST,
     ATTR_MEDIA_SHUFFLE, ATTR_MEDIA_TITLE, ATTR_MEDIA_TRACK, ATTR_MEDIA_VOLUME_MUTED,
     ATTR_SOUND_MODE, ATTR_SOUND_MODE_LIST, ATTR_MEDIA_CONTENT_ID)
 
@@ -54,7 +54,8 @@ async def async_setup_entry(hass, entry, async_add_entities):
     foobar2k_api = hass.data[DOMAIN].get(entry.entry_id)
     _LOGGER.debug(f"[Media_Player_FB2k] Init {foobar2k_api.host}:{foobar2k_api.port}")
 
-    async_add_entities([Foobar2kDevice(foobar2k_api)], update_before_add=True)
+    if not foobar2k_api:
+        async_add_entities([Foobar2kDevice(foobar2k_api)], update_before_add=True)
 
 
 class Foobar2kDevice(MediaPlayerEntity):
@@ -97,7 +98,6 @@ class Foobar2kDevice(MediaPlayerEntity):
             self._media_path = self._service.media_path
             self._track_position = self._service.track_position
             self._track_duration = self._service.track_duration
-            self._last_update = dt_util.utcnow()
 
     @property
     def unique_id(self) -> str:
@@ -149,7 +149,7 @@ class Foobar2kDevice(MediaPlayerEntity):
     @property
     def media_content_type(self):
         """Content type of current playing media."""
-        return MEDIA_TYPE_MUSIC
+        return MediaType.MUSIC
 
     @property
     def media_artist(self):
@@ -176,12 +176,13 @@ class Foobar2kDevice(MediaPlayerEntity):
     @property
     def media_position_updated_at(self):
         """When was the position of the current playing media valid."""
-        return self._last_update
+        if self.state in (STATE_PLAYING, STATE_PAUSED):
+            return dt_util.utcnow()
+        return None
 
     @property
     def media_image_url(self):
         """Image url of current playing media."""
-        _LOGGER.debug("[Media_Player_FB2K] Album ART")
         return self._album_art
 
     @property
