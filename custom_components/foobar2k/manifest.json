@@ -1,0 +1,14 @@
+{
+    "domain": "foobar2k",
+    "name": "Foobar 2000 Player",
+    "documentation": "https://github.com/strepto42/foobar2k_custom_component",
+    "issue_tracker": "https://github.com/strepto42/foobar2k_custom_component/issues",
+    "requirements": [],
+    "dependencies": [],
+    "codeowners": [
+        "@strepto42"
+    ],
+    "config_flow": true,
+    "iot_class": "local_polling",
+    "version": "1.0.0"
+}
