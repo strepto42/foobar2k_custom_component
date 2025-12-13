@@ -237,11 +237,11 @@ class Foobar2kDevice(MediaPlayerEntity):
         await self._service.toggle_play_pause()
 
     async def async_media_pause(self):
-        """Send the media player the command for play/pause if playing."""
+        """Send the media player the command for pause if playing."""
         _LOGGER.debug("[Media_Player_FB2K] Pause Called")
         if (self.state == STATE_PLAYING):
             _LOGGER.debug("[Media_Player_FB2K] Pausing")
-            self.async_media_play_pause()
+            await self._service.pause()
 
     async def async_media_stop(self):
         """Send the media player the stop command."""
@@ -281,7 +281,7 @@ class Foobar2kDevice(MediaPlayerEntity):
         """Send the media player the command for setting the shuffle mode."""
         _LOGGER.debug(f"[Media_Player_FB2K] set_shuffle Called **[{shuffle}]**")
         mode = PLAYBACK_MODE_RANDOM if shuffle else PLAYBACK_MODE_DEFAULT
-        await self._service.set_playback_mode(await self._service.get_playback_mode_description(mode))
+        await self._service.set_playback_mode(self._service.get_playback_mode_description(mode))
 
     async def async_select_source(self, source):
         _LOGGER.debug(f"[Media_Player_FB2K] Setting source [{source}]")

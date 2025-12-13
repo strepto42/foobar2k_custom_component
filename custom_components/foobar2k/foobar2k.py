@@ -1,6 +1,6 @@
 import requests
 import logging
-import json.tool
+import json
 import time
 import aiohttp
 import asyncio
@@ -122,7 +122,7 @@ class Foobar2k:
                     return await self.fetch_post(command, data)
             async with aiohttp.ClientSession() as self._session:
                 if verb == HTTP_GET:
-                    return await self.fetch_get(command)
+                    return await self.fetch_get(command, data)
                 else:
                     return await self.fetch_post(command, data)
         except ValueError:
@@ -131,7 +131,7 @@ class Foobar2k:
             _LOGGER.debug(f"[Foobar2k] Disconnected Error. Retry Count [{retries}]")
             if retries == 0:
                 raise error
-            return await self.prep_fetch(command, data, retries=retries - 1)
+            return await self.prep_fetch(verb, command, data, retries=retries - 1)
 
     async def async_update(self, **kwargs):
         """Get the latest status information from Foobar2k server"""
@@ -329,6 +329,13 @@ class Foobar2k:
             else:            
                 await self.prep_fetch(HTTP_POST, POST_PLAYER_PAUSE_TOGGLE, data=None)
 
+    async def pause(self):
+        """Send pause command to FB2K Server"""
+        _LOGGER.debug("[Foobar2k] In Pause")
+        if (self._power == POWER_ON and self._state == STATE_PLAYING):
+            await self.prep_fetch(HTTP_POST, POST_PLAYER_PAUSE, data=None)
+            self._state = STATE_PAUSED
+
     async def play(self):
         """Send play command to FB2K Server"""
         _LOGGER.debug("[Foobar2k] In Play")
@@ -344,7 +351,7 @@ class Foobar2k:
     async def stop(self):
         """Send stop command to FB2K Server"""
         _LOGGER.debug(f"[Foobar2k] In Stop. Current state is [{self._state}]")
-        if (self._power == POWER_ON and self._state == STATE_PLAYING):
+        if (self._power == POWER_ON and self._state in [STATE_PLAYING, STATE_PAUSED]):
             await self.prep_fetch(HTTP_POST, POST_PLAYER_STOP, data=None)
             self._state = STATE_STOPPED
             _LOGGER.debug(f"[Foobar2k] State now is [{self._state}]")
