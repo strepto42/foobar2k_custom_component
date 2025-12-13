@@ -54,7 +54,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
     foobar2k_api = hass.data[DOMAIN].get(entry.entry_id)
     _LOGGER.debug(f"[Media_Player_FB2k] Init {foobar2k_api.host}:{foobar2k_api.port}")
 
-    if not foobar2k_api:
+    if foobar2k_api:
         async_add_entities([Foobar2kDevice(foobar2k_api)], update_before_add=True)
 
 
