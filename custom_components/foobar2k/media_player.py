@@ -1,6 +1,7 @@
 """Support for Foobar2k api provided by beefweb https://github.com/hyperblast/beefweb."""
 
 import logging
+from urllib.parse import urlparse
 
 from homeassistant.components.media_player import MediaPlayerEntity
 from homeassistant.components.media_player.const import MediaPlayerEntityFeature, MediaType
@@ -10,12 +11,19 @@ import homeassistant.util.dt as dt_util
 from .const import DOMAIN
 from .foobar2k import PLAYBACK_MODE_DEFAULT, PLAYBACK_MODE_RANDOM
 
+# media_content_id URL scheme used by browse_media + play_media.
+#   foobar2k://playlist/<id>           — play playlist from index 0
+#   foobar2k://playlist/<id>/<index>   — play specific track in playlist
+#   foobar2k://file/<urlencoded-path>  — enqueue file in active playlist, play it
+URL_SCHEME = "foobar2k"
+
 _LOGGER = logging.getLogger(__name__)
 
 SUPPORT_FOOBAR_PLAYER = \
     MediaPlayerEntityFeature.NEXT_TRACK | \
     MediaPlayerEntityFeature.PAUSE | \
     MediaPlayerEntityFeature.PLAY | \
+    MediaPlayerEntityFeature.PLAY_MEDIA | \
     MediaPlayerEntityFeature.PREVIOUS_TRACK | \
     MediaPlayerEntityFeature.SELECT_SOURCE | \
     MediaPlayerEntityFeature.SELECT_SOUND_MODE | \
@@ -259,3 +267,31 @@ class Foobar2kDevice(MediaPlayerEntity):
       """Switch the sound mode of the entity."""
       _LOGGER.debug(f"[Media_Player_FB2K] Sound Mode [{sound_mode}]")
       await self._service.set_playback_mode(sound_mode)
+
+    async def async_play_media(self, media_type, media_id, **kwargs):
+        """Dispatch a foobar2k:// media URL to the right beefweb call.
+
+        Accepts:
+          * foobar2k://playlist/<id>           — play playlist from start
+          * foobar2k://playlist/<id>/<index>   — play track at index
+        """
+        _LOGGER.debug("[Media_Player_FB2K] play_media type=%s id=%s", media_type, media_id)
+        parsed = urlparse(media_id)
+        if parsed.scheme != URL_SCHEME:
+            raise ValueError(
+                f"media_id must use the {URL_SCHEME}:// scheme, got {media_id!r}"
+            )
+
+        # urlparse of "foobar2k://playlist/pl1/7" gives netloc='playlist',
+        # path='/pl1/7'. Strip the leading slash and split.
+        parts = parsed.path.lstrip("/").split("/") if parsed.path else []
+
+        if parsed.netloc == "playlist":
+            if not parts or not parts[0]:
+                raise ValueError(f"playlist URL needs an id: {media_id!r}")
+            playlist_id = parts[0]
+            index = int(parts[1]) if len(parts) > 1 and parts[1] else 0
+            await self._service.set_playlist_play(playlist_id, index)
+            return
+
+        raise ValueError(f"unsupported foobar2k:// URL: {media_id!r}")

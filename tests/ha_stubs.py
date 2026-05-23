@@ -201,6 +201,8 @@ def install() -> None:
         SELECT_SOURCE = 256
         SELECT_SOUND_MODE = 512
         SHUFFLE_SET = 1024
+        PLAY_MEDIA = 2048
+        BROWSE_MEDIA = 4096
 
     class MediaType:
         MUSIC = "music"
