@@ -90,14 +90,15 @@ class Foobar2kDevice(MediaPlayerEntity):
         self._current_playlist = self._service.current_playlist
         self._current_sound_mode = self._service.get_playback_mode_description(
             self._service.playback_mode)
-        if (self.state == STATE_PLAYING):
-            self._album_art = self._service.album_art
-            self._title = self._service.title
-            self._artist = self._service.artist
-            self._album = self._service.album
-            self._media_path = self._service.media_path
-            self._track_position = self._service.track_position
-            self._track_duration = self._service.track_duration
+        # Always mirror the service's track fields so paused-state position
+        # updates land and stopped-state clears (None) propagate to the UI.
+        self._album_art = self._service.album_art
+        self._title = self._service.title
+        self._artist = self._service.artist
+        self._album = self._service.album
+        self._media_path = self._service.media_path
+        self._track_position = self._service.track_position
+        self._track_duration = self._service.track_duration
 
     @property
     def unique_id(self) -> str:
