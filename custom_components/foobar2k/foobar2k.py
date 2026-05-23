@@ -445,6 +445,20 @@ class Foobar2k:
         items = data.get("playlistItems", {}).get("items", [])
         return [dict(zip(columns, item.get("columns", []))) for item in items]
 
+    async def get_playlist_size(self, playlist_id):
+        """Return totalCount for a playlist via the count=0 trick — beefweb
+        still includes totalCount in the response when 0 items are requested.
+        Returns 0 on failure.
+        """
+        endpoint = GET_PLAYLIST_ITEMS.format(playlist_id, "0:0")
+        # The empty columns body keeps beefweb happy without asking for data.
+        body = json.dumps({"columns": []})
+        response = await self.prep_fetch(HTTP_GET, endpoint, data=body)
+        if response is None:
+            return 0
+        data = json.loads(response)
+        return int(data.get("playlistItems", {}).get("totalCount", 0))
+
     async def add_to_playlist(self, playlist_id, paths):
         """Append `paths` (absolute file paths or directories) to the
         playlist. async=false on beefweb's side so the add is complete
