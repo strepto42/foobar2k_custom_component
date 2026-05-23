@@ -5,14 +5,15 @@ import aiohttp
 
 from custom_components.foobar2k.foobar2k import Foobar2k
 import voluptuous as vol
-from aiohttp import ClientConnectionError, ClientSession, ServerDisconnectedError
+from aiohttp import ClientConnectionError, ServerDisconnectedError
 
 from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
 from homeassistant.const import CONF_HOST, CONF_PORT, CONF_TIMEOUT
 from .const import DOMAIN, TIMEOUT
 from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 import homeassistant.helpers.config_validation as cv
-from homeassistant.core import HomeAssistant 
+from homeassistant.core import HomeAssistant
 from homeassistant.util import Throttle
 
 from . import config_flow  # noqa: F401
@@ -67,7 +68,7 @@ async def async_unload_entry(hass, config_entry):
 async def api_init(hass, host, port, timeout = TIMEOUT):
     """Init the Foobar2k Server."""
 
-    session = aiohttp.ClientSession()
+    session = async_get_clientsession(hass)
     try:
         _LOGGER.debug(f"We have host {host} port {port}")
         device = Foobar2k(session, host, port, timeout)

@@ -139,6 +139,7 @@ def install() -> None:
 
         def __init__(self) -> None:
             self.unique_id: str | None = None
+            self.hass: Any = None  # set by HA at runtime; tests assign as needed
 
         async def async_set_unique_id(self, unique_id):
             self.unique_id = unique_id
