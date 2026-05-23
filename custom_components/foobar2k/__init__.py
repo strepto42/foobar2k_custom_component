@@ -22,24 +22,15 @@ _LOGGER = logging.getLogger(__name__)
 PLATFORMS = ["media_player"]
 
 async def async_setup(hass, config):
-    """Connect to Foobar2k Server"""
-    if DOMAIN not in config:
-        return True
+    """Integration is UI-only — nothing to do here.
 
-    host = config[DOMAIN][CONF_HOST]
-    if not host:
-        hass.async_create_task(
-            hass.config_entries.flow.async_init(
-                DOMAIN, context={"source": SOURCE_IMPORT}
-            )
-        )
- 
-    hass.async_create_task(
-        hass.config_entries.flow.async_init(
-            DOMAIN, context={"source": SOURCE_IMPORT}, data={CONF_HOST: host}
-        )
-    )
+    Historically this function tried to launch a config-entry import flow
+    from YAML, but the integration has no YAML schema and the launcher
+    issued duplicate flow inits. Kept as a no-op so older configs don't
+    blow up.
+    """
     return True
+
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Connect to Foobar2k Server"""
