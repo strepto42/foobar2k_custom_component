@@ -16,17 +16,6 @@ from .foobar2k import Foobar2k
 _LOGGER = logging.getLogger(__name__)
 PLATFORMS = ["media_player"]
 
-async def async_setup(hass, config):
-    """Integration is UI-only — nothing to do here.
-
-    Historically this function tried to launch a config-entry import flow
-    from YAML, but the integration has no YAML schema and the launcher
-    issued duplicate flow inits. Kept as a no-op so older configs don't
-    blow up.
-    """
-    return True
-
-
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Connect to Foobar2k Server"""
     conf = entry.data

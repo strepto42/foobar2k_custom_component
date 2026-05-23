@@ -1,14 +1,6 @@
 {
     "title": "Foobar 2000 Server",
     "config": {
-        "abort": {
-            "already_configured": "Foobar 2000 server is already configured"
-        },
-        "error": {
-            "device_fail": "Unexpected error",
-            "device_timeout": "Failed to connect",
-            "forbidden": "Invalid authentication"
-        },
         "step": {
             "user": {
                 "data": {
@@ -18,6 +10,14 @@
                 "description": "Enter the IP address of your Foobar 2000 server.",
                 "title": "Configure Foobar 2k"
             }
+        },
+        "abort": {
+            "already_configured": "Foobar 2000 server is already configured"
+        },
+        "error": {
+            "device_fail": "Unexpected error",
+            "device_timeout": "Failed to connect",
+            "forbidden": "Invalid authentication"
         }
     }
 }
