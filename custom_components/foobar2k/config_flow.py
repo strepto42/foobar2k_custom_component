@@ -42,7 +42,8 @@ class Foobar2kConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         errors = {}
         host = user_input[CONF_HOST]
-        port = user_input[CONF_PORT]
+        port = user_input.get(CONF_PORT) or DEFAULT_PORT
+        user_input = {**user_input, CONF_PORT: port}
 
         try:
             _LOGGER.debug("create_device")
@@ -83,6 +84,6 @@ class Foobar2kConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return vol.Schema(
             {
                 vol.Required(CONF_HOST): str,
-                vol.Optional(CONF_PORT): int
+                vol.Optional(CONF_PORT, default=DEFAULT_PORT): int,
             }
         )

@@ -9,7 +9,7 @@ from aiohttp import ClientConnectionError, ServerDisconnectedError
 
 from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
 from homeassistant.const import CONF_HOST, CONF_PORT, CONF_TIMEOUT
-from .const import DOMAIN, TIMEOUT
+from .const import DEFAULT_PORT, DOMAIN, TIMEOUT
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 import homeassistant.helpers.config_validation as cv
@@ -45,7 +45,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Connect to Foobar2k Server"""
     conf = entry.data
 
-    foobar2k_api = await api_init( hass, conf[CONF_HOST], conf.get(CONF_PORT), )
+    foobar2k_api = await api_init(hass, conf[CONF_HOST], conf.get(CONF_PORT) or DEFAULT_PORT)
     if not foobar2k_api:
         return False
 
