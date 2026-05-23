@@ -22,6 +22,8 @@ class FakeService:
         self.track_duration = None
         self.state = "stopped"
         self.update_calls = 0
+        # Recorded calls — tests assert on these.
+        self.play_calls: list[tuple[str, int]] = []  # (playlist_id, index)
         for k, v in overrides.items():
             setattr(self, k, v)
 
@@ -35,3 +37,6 @@ class FakeService:
 
     async def async_update(self):
         self.update_calls += 1
+
+    async def set_playlist_play(self, playlist_id, index):
+        self.play_calls.append((playlist_id, index))
