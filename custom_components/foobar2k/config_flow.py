@@ -9,8 +9,8 @@ from homeassistant import config_entries, core
 from homeassistant.const import CONF_HOST, CONF_PORT
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from custom_components.foobar2k.foobar2k import Foobar2k
 from .const import DEFAULT_PORT, DOMAIN, TIMEOUT
+from .foobar2k import Foobar2k
 
 _LOGGER = logging.getLogger(__name__)
 
