@@ -62,7 +62,9 @@ class Foobar2kDevice(MediaPlayerEntity):
 
     def __init__(self, api):
         """Initialize the device."""
-        self._name = DOMAIN
+        # Include the server's unique_id (host_port) so multiple foobar2000
+        # instances don't share a friendly name.
+        self._name = f"{DOMAIN}_{api.unique_id}"
         self._state = STATE_UNKNOWN
         self._service = api
         self._title = None
