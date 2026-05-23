@@ -256,8 +256,15 @@ class Foobar2k:
 
     @property
     def volume(self):
-        """Volume level."""
-        return self._volume + abs(self._min_volume)
+        """Volume as a 0.0..1.0 fraction.
+
+        beefweb reports volume in dB with a configurable minimum
+        (e.g. -100..0 by default, but the user can change it). Translate
+        to a fraction so the entity layer doesn't need to know the dB
+        range.
+        """
+        rng = abs(self._min_volume) or 1
+        return (self._volume + abs(self._min_volume)) / rng
 
     @property
     def state(self):
@@ -399,10 +406,10 @@ class Foobar2k:
             self._isMuted = mute
 
     async def set_volume(self, volume):
-        """Change the volume."""
+        """Set volume from a 0.0..1.0 fraction (converted to beefweb dB)."""
         _LOGGER.debug(f"[Foobar2k] In Volume [{volume}]")
         if (self._power == POWER_ON):
-            new_volume = self._min_volume + volume
+            new_volume = self._min_volume + volume * abs(self._min_volume)
             data = json.dumps({"volume": new_volume})
             _LOGGER.debug(f"[Foobar2k] Volume data [{data}]")
             await self.prep_fetch(HTTP_POST, POST_PLAYER, data=data)
