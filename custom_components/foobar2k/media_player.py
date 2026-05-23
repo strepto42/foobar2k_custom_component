@@ -77,7 +77,7 @@ class Foobar2kDevice(MediaPlayerEntity):
         self._current_playlist = None
         self._current_sound_mode = None
         self._media_path = None
-        self._last_update = None
+        self._track_position_measured_at = None
         self._playlists = []
         self._sound_mode_list = self._service.playback_modes
 
@@ -97,7 +97,10 @@ class Foobar2kDevice(MediaPlayerEntity):
         self._artist = self._service.artist
         self._album = self._service.album
         self._media_path = self._service.media_path
-        self._track_position = self._service.track_position
+        new_position = self._service.track_position
+        if new_position != self._track_position:
+            self._track_position_measured_at = dt_util.utcnow()
+        self._track_position = new_position
         self._track_duration = self._service.track_duration
 
     @property
@@ -176,9 +179,9 @@ class Foobar2kDevice(MediaPlayerEntity):
 
     @property
     def media_position_updated_at(self):
-        """When was the position of the current playing media valid."""
+        """When the value of media_position was last measured."""
         if self.state in (STATE_PLAYING, STATE_PAUSED):
-            return dt_util.utcnow()
+            return self._track_position_measured_at
         return None
 
     @property
