@@ -1,7 +1,6 @@
 import requests
 import logging
 import json
-import time
 import aiohttp
 import asyncio
 
@@ -361,7 +360,7 @@ class Foobar2k:
         _LOGGER.debug("[Foobar2k] In Next")
         if (self._power == POWER_ON):
             await self.prep_fetch(HTTP_POST, POST_PLAYER_NEXT, data=None)
-            time.sleep(0.2)
+            await asyncio.sleep(0.2)
             await self.async_update()
 
     async def play_previous(self):
@@ -369,7 +368,7 @@ class Foobar2k:
         _LOGGER.debug("[Foobar2k] In Previous")
         if (self._power == POWER_ON):
             await self.prep_fetch(HTTP_POST, POST_PLAYER_PREVIOUS, data=None)
-            time.sleep(0.2)
+            await asyncio.sleep(0.2)
             await self.async_update()
 
     async def toggle_mute(self):
@@ -419,7 +418,7 @@ class Foobar2k:
         """ Set the playlist and song index"""
         await self.prep_fetch(HTTP_POST, POST_PLAYER_PLAY_PLAYLIST.format(playlist_id, index), data=None)
         self._current_playlist_id = playlist_id
-        time.sleep(0.2)
+        await asyncio.sleep(0.2)
         await self.async_update()
 
     async def set_playback_mode(self, new_mode):
