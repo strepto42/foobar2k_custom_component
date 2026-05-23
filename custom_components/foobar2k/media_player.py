@@ -1,7 +1,7 @@
 """Support for Foobar2k api provided by beefweb https://github.com/hyperblast/beefweb."""
 
 import logging
-from urllib.parse import urlparse
+from urllib.parse import unquote, urlparse
 
 from homeassistant.components.media_player import MediaPlayerEntity
 from homeassistant.components.media_player.const import MediaPlayerEntityFeature, MediaType
@@ -292,6 +292,27 @@ class Foobar2kDevice(MediaPlayerEntity):
             playlist_id = parts[0]
             index = int(parts[1]) if len(parts) > 1 and parts[1] else 0
             await self._service.set_playlist_play(playlist_id, index)
+            return
+
+        if parsed.netloc == "file":
+            if not parsed.path or parsed.path == "/":
+                raise ValueError(f"file URL needs a path: {media_id!r}")
+            path = unquote(parsed.path.lstrip("/"))
+            # Enqueue into the active playlist and play the just-added track.
+            active_title = self._current_playlist
+            if not active_title:
+                raise ValueError(
+                    "no current playlist — select a source first so file "
+                    "playback has somewhere to enqueue to"
+                )
+            playlist_id = self._playlists.get(active_title)
+            if not playlist_id:
+                raise ValueError(
+                    f"no current playlist id for active source {active_title!r}"
+                )
+            new_index = await self._service.get_playlist_size(playlist_id)
+            await self._service.add_to_playlist(playlist_id, [path])
+            await self._service.set_playlist_play(playlist_id, new_index)
             return
 
         raise ValueError(f"unsupported foobar2k:// URL: {media_id!r}")
