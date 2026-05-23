@@ -5,7 +5,8 @@ import voluptuous as vol
 
 from async_timeout import timeout
 from custom_components.foobar2k.foobar2k import Foobar2k
-from aiohttp import ClientSession, ServerDisconnectedError
+from aiohttp import ClientError, ClientSession, ServerDisconnectedError
+from aiohttp import web_exceptions
 
 from homeassistant import config_entries, core
 from homeassistant.const import CONF_HOST, CONF_PORT
