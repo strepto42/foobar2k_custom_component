@@ -170,29 +170,40 @@ class Foobar2k:
         self._state = new_state
         self._playback_mode = data["player"]["playbackMode"]
 
-        if 'activeItem' in data["player"]:
-            _LOGGER.debug("[Foobar2k] Set_properties Have activeItem")
-            if ('playlistId' in data["player"]["activeItem"]):
-                index = data["player"]["activeItem"]["index"]
-                if (index >= 0):
-                    _LOGGER.debug("[Foobar2k] Set_properties Have index")
-                    self._current_index = index
-                    self._current_playlist_id = data["player"]["activeItem"]["playlistId"]
-                    self._track_duration = data["player"]["activeItem"]["duration"]
-                    self._track_position = data["player"]["activeItem"]["position"]
-                    self._album_art_url = "{0}{1}".format(self._base_url, GET_ALBUM_ART.format(self._current_playlist_id, index))
+        active = data["player"].get("activeItem") or {}
+        playlist_id = active.get("playlistId")
+        index = active.get("index", -1)
+        if playlist_id and index >= 0:
+            _LOGGER.debug("[Foobar2k] Set_properties Have index")
+            self._current_index = index
+            self._current_playlist_id = playlist_id
+            self._track_duration = active.get("duration")
+            self._track_position = active.get("position")
+            self._album_art_url = "{0}{1}".format(
+                self._base_url, GET_ALBUM_ART.format(playlist_id, index)
+            )
 
-                    currently = await self.prep_fetch(HTTP_GET, GET_PLAYLIST_ITEMS.format(
-                        self._current_playlist_id, index), data='{"columns":["%artist%","%title%", "%track%", "%album%", "%path%"]}')
-                    if (currently is not None):
-                        _LOGGER.debug("[Foobar2k] Set_properties Have current song")
-                        i = json.loads(currently)
-                        _LOGGER.debug(f'Currently Playing [{i["playlistItems"]["items"][0]["columns"][0]}] [{i["playlistItems"]["items"][0]["columns"][1]}]')
-
-                        self._artist = i["playlistItems"]["items"][0]["columns"][0]
-                        self._title = i["playlistItems"]["items"][0]["columns"][1]
-                        self._album = i["playlistItems"]["items"][0]["columns"][3]
-                        self._path = i["playlistItems"]["items"][0]["columns"][4]
+            currently = await self.prep_fetch(HTTP_GET, GET_PLAYLIST_ITEMS.format(
+                playlist_id, index), data='{"columns":["%artist%","%title%", "%track%", "%album%", "%path%"]}')
+            if (currently is not None):
+                _LOGGER.debug("[Foobar2k] Set_properties Have current song")
+                i = json.loads(currently)
+                self._artist = i["playlistItems"]["items"][0]["columns"][0]
+                self._title = i["playlistItems"]["items"][0]["columns"][1]
+                self._album = i["playlistItems"]["items"][0]["columns"][3]
+                self._path = i["playlistItems"]["items"][0]["columns"][4]
+        else:
+            # No active item — player stopped or playlist empty. Clear stale
+            # track metadata so the entity does not keep showing the last
+            # played song.
+            self._current_index = 0
+            self._track_duration = None
+            self._track_position = None
+            self._album_art_url = None
+            self._artist = None
+            self._title = None
+            self._album = None
+            self._path = None
 
         if 'volume' in data["player"]:
             self._isMuted = data["player"]["volume"]["isMuted"]
