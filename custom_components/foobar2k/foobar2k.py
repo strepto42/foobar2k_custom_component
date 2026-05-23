@@ -169,10 +169,10 @@ class Foobar2k:
         data = json.loads(response)
         _LOGGER.debug(f"[Foobar2k] Set_properties Load response [{data}]")
         new_state = data["player"]["playbackState"]
-        if (new_state != self._state):
-            _LOGGER.debug("[Foobar2k] Getting playlists")
-            await self.set_playlists()
-            
+        # Refresh playlists every poll — beefweb's /api/playlists is cheap
+        # and the previous gate (only on state-change) hid user-added
+        # playlists while playback continued.
+        await self.set_playlists()
         self._state = new_state
         self._playback_mode = data["player"]["playbackMode"]
 

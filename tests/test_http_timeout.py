@@ -25,6 +25,9 @@ _PLAYER_BODY = json.dumps(
 async def test_fetch_get_passes_aiohttp_timeout():
     session = FakeSession()
     session.queue_get("/api/player", FakeResponse(body=_PLAYER_BODY))
+    session.queue_get(
+        "/api/playlists", FakeResponse(body=json.dumps({"playlists": []}))
+    )
 
     fb = fb2k_module.Foobar2k(session, "host", 8880, timeout=7)
     await fb.async_update()
