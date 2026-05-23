@@ -28,6 +28,8 @@ class FakeService:
         self.call_log: list[tuple[str, tuple]] = []  # ordered cross-method log
         # Tests can override via .playlist_sizes[playlist_id] = N.
         self.playlist_sizes: dict[str, int] = {}
+        # playlist_id → list of column-dicts as list_playlist_items returns
+        self.playlist_items: dict[str, list[dict]] = {}
         for k, v in overrides.items():
             setattr(self, k, v)
 
@@ -50,6 +52,13 @@ class FakeService:
         size = self.playlist_sizes.get(playlist_id, 0)
         self.call_log.append(("get_playlist_size", (playlist_id, size)))
         return size
+
+    async def list_playlist_items(self, playlist_id, offset, count, columns):
+        rows = self.playlist_items.get(playlist_id, [])
+        self.call_log.append(
+            ("list_playlist_items", (playlist_id, offset, count, tuple(columns)))
+        )
+        return rows[offset:offset + count]
 
     async def add_to_playlist(self, playlist_id, paths):
         paths = list(paths)

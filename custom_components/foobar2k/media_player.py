@@ -3,8 +3,12 @@
 import logging
 from urllib.parse import unquote, urlparse
 
-from homeassistant.components.media_player import MediaPlayerEntity
-from homeassistant.components.media_player.const import MediaPlayerEntityFeature, MediaType
+from homeassistant.components.media_player import BrowseMedia, MediaPlayerEntity
+from homeassistant.components.media_player.const import (
+    MediaClass,
+    MediaPlayerEntityFeature,
+    MediaType,
+)
 from homeassistant.const import STATE_IDLE, STATE_PAUSED, STATE_PLAYING, STATE_UNKNOWN
 import homeassistant.util.dt as dt_util
 
@@ -23,6 +27,7 @@ SUPPORT_FOOBAR_PLAYER = \
     MediaPlayerEntityFeature.NEXT_TRACK | \
     MediaPlayerEntityFeature.PAUSE | \
     MediaPlayerEntityFeature.PLAY | \
+    MediaPlayerEntityFeature.BROWSE_MEDIA | \
     MediaPlayerEntityFeature.PLAY_MEDIA | \
     MediaPlayerEntityFeature.PREVIOUS_TRACK | \
     MediaPlayerEntityFeature.SELECT_SOURCE | \
@@ -267,6 +272,106 @@ class Foobar2kDevice(MediaPlayerEntity):
       """Switch the sound mode of the entity."""
       _LOGGER.debug(f"[Media_Player_FB2K] Sound Mode [{sound_mode}]")
       await self._service.set_playback_mode(sound_mode)
+
+    async def async_browse_media(self, media_content_type=None, media_content_id=None):
+        """Return a BrowseMedia tree for the media browser UI.
+
+        Top-level shows two folders (Playlists, Library); drilling into
+        Playlists shows each foobar2000 playlist and its tracks. Library
+        is built out in a follow-up iteration.
+        """
+        if not media_content_id:
+            return BrowseMedia(
+                media_class=MediaClass.DIRECTORY,
+                media_content_id="",
+                media_content_type="directory",
+                title="foobar2000",
+                can_play=False,
+                can_expand=True,
+                children=[
+                    BrowseMedia(
+                        media_class=MediaClass.DIRECTORY,
+                        media_content_id="foobar2k://playlists",
+                        media_content_type="directory",
+                        title="Playlists",
+                        can_play=False,
+                        can_expand=True,
+                    ),
+                    BrowseMedia(
+                        media_class=MediaClass.DIRECTORY,
+                        media_content_id="foobar2k://library",
+                        media_content_type="directory",
+                        title="Library",
+                        can_play=False,
+                        can_expand=True,
+                    ),
+                ],
+            )
+
+        if media_content_id == "foobar2k://playlists":
+            children = [
+                BrowseMedia(
+                    media_class=MediaClass.PLAYLIST,
+                    media_content_id=f"foobar2k://playlist/{pid}",
+                    media_content_type=MediaType.PLAYLIST,
+                    title=title,
+                    can_play=True,
+                    can_expand=True,
+                )
+                for title, pid in sorted(self._playlists.items())
+            ]
+            return BrowseMedia(
+                media_class=MediaClass.DIRECTORY,
+                media_content_id="foobar2k://playlists",
+                media_content_type="directory",
+                title="Playlists",
+                can_play=False,
+                can_expand=True,
+                children=children,
+                children_media_class=MediaClass.PLAYLIST,
+            )
+
+        parsed = urlparse(media_content_id)
+        if parsed.scheme == URL_SCHEME and parsed.netloc == "playlist":
+            parts = parsed.path.lstrip("/").split("/")
+            if not parts or not parts[0]:
+                raise ValueError(f"playlist URL needs an id: {media_content_id!r}")
+            playlist_id = parts[0]
+            size = await self._service.get_playlist_size(playlist_id)
+            rows = await self._service.list_playlist_items(
+                playlist_id,
+                offset=0,
+                count=size,
+                columns=["%title%", "%artist%", "%album%"],
+            )
+            children = [
+                BrowseMedia(
+                    media_class=MediaClass.TRACK,
+                    media_content_id=f"foobar2k://playlist/{playlist_id}/{i}",
+                    media_content_type=MediaType.TRACK,
+                    title=row.get("%title%") or "(unknown)",
+                    can_play=True,
+                    can_expand=False,
+                )
+                for i, row in enumerate(rows)
+            ]
+            # Reverse-lookup the title for the node label.
+            title = next(
+                (t for t, pid in self._playlists.items() if pid == playlist_id),
+                playlist_id,
+            )
+            return BrowseMedia(
+                media_class=MediaClass.PLAYLIST,
+                media_content_id=media_content_id,
+                media_content_type=MediaType.PLAYLIST,
+                title=title,
+                can_play=True,
+                can_expand=True,
+                children=children,
+                children_media_class=MediaClass.TRACK,
+            )
+
+        raise ValueError(f"unknown foobar2k:// browse URL: {media_content_id!r}")
 
     async def async_play_media(self, media_type, media_id, **kwargs):
         """Dispatch a foobar2k:// media URL to the right beefweb call.

@@ -206,9 +206,47 @@ def install() -> None:
 
     class MediaType:
         MUSIC = "music"
+        TRACK = "track"
+        PLAYLIST = "playlist"
+        DIRECTORY = "directory"
+
+    class MediaClass:
+        DIRECTORY = "directory"
+        PLAYLIST = "playlist"
+        TRACK = "track"
+        MUSIC = "music"
+        APP = "app"
+
+    class BrowseMedia:
+        """Minimal stand-in for homeassistant.components.media_player.BrowseMedia."""
+
+        def __init__(
+            self,
+            *,
+            media_class,
+            media_content_id,
+            media_content_type,
+            title,
+            can_play,
+            can_expand,
+            children=None,
+            thumbnail=None,
+            children_media_class=None,
+        ):
+            self.media_class = media_class
+            self.media_content_id = media_content_id
+            self.media_content_type = media_content_type
+            self.title = title
+            self.can_play = can_play
+            self.can_expand = can_expand
+            self.children = children or []
+            self.thumbnail = thumbnail
+            self.children_media_class = children_media_class
 
     ha_mp_const.MediaPlayerEntityFeature = MediaPlayerEntityFeature
     ha_mp_const.MediaType = MediaType
+    ha_mp_const.MediaClass = MediaClass
+    ha_mp.BrowseMedia = BrowseMedia
     ha_mp_const.ATTR_APP_NAME = "app_name"
     ha_mp_const.ATTR_MEDIA_ALBUM_ARTIST = "media_album_artist"
     ha_mp_const.ATTR_MEDIA_ALBUM_NAME = "media_album_name"
