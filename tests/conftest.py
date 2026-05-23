@@ -11,3 +11,14 @@ if str(REPO_ROOT) not in sys.path:
 from tests import ha_stubs  # noqa: E402
 
 ha_stubs.install()
+
+import pytest  # noqa: E402
+
+
+@pytest.fixture(autouse=True)
+def _reset_ha_state():
+    """Reset stub state that bleeds between tests (unique_id registry)."""
+    from homeassistant.config_entries import ConfigFlow
+    ConfigFlow._unique_ids_in_use.clear()
+    yield
+    ConfigFlow._unique_ids_in_use.clear()

@@ -32,27 +32,11 @@ def _patch_foobar2k(monkeypatch, target_module, exc):
     monkeypatch.setattr(target_module, "Foobar2k", factory)
 
 
-class _NoopTimeout:
-    """Sync ctx-manager replacement for async_timeout.timeout() so these tests
-    can exercise the exception-handler clauses without tripping the separate
-    `with timeout()` / shadowing bugs covered by Fix #4."""
-
-    def __init__(self, *_args, **_kwargs):
-        pass
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, *exc):
-        return False
-
-
 async def test_config_flow_catches_aiohttp_ClientError_specifically(monkeypatch, caplog):
     """When async_update raises aiohttp.ClientError, the specific except clause
     should fire. Currently it references an unimported `ClientError` → NameError →
     the broad `except Exception` catches that NameError → wrong log message.
     """
-    monkeypatch.setattr(cf_module, "timeout", _NoopTimeout)
     _patch_foobar2k(monkeypatch, cf_module, aiohttp.ClientError("boom"))
 
     caplog.set_level(logging.DEBUG, logger=cf_module._LOGGER.name)
@@ -76,7 +60,6 @@ async def test_config_flow_catches_HTTPForbidden_specifically(monkeypatch, caplo
     specific HTTPForbidden clause. Currently `web_exceptions.HTTPForbidden`
     raises NameError → swallowed by broad except → wrong 'device_fail' error.
     """
-    monkeypatch.setattr(cf_module, "timeout", _NoopTimeout)
     forbidden = aiohttp.web_exceptions.HTTPForbidden()
     _patch_foobar2k(monkeypatch, cf_module, forbidden)
 

@@ -46,9 +46,9 @@ class Foobar2kConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         try:
             _LOGGER.debug("create_device")
             session = aiohttp.ClientSession()
-            with timeout(TIMEOUT):
+            async with timeout(TIMEOUT):
                 _LOGGER.debug("Call Foobar2k")
-                fb2k_api = Foobar2k(session, host, port, timeout)
+                fb2k_api = Foobar2k(session, host, port, TIMEOUT)
                 await self.async_set_unique_id(fb2k_api.unique_id)
                 await fb2k_api.async_update()
         except asyncio.TimeoutError:
