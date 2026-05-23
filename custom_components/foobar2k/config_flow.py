@@ -5,11 +5,12 @@ import voluptuous as vol
 
 from async_timeout import timeout
 from custom_components.foobar2k.foobar2k import Foobar2k
-from aiohttp import ClientError, ClientSession, ServerDisconnectedError
+from aiohttp import ClientError, ServerDisconnectedError
 from aiohttp import web_exceptions
 
 from homeassistant import config_entries, core
 from homeassistant.const import CONF_HOST, CONF_PORT
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from . import config_flow
 from .const import DEFAULT_PORT, DOMAIN, TIMEOUT
@@ -45,7 +46,7 @@ class Foobar2kConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         try:
             _LOGGER.debug("create_device")
-            session = aiohttp.ClientSession()
+            session = async_get_clientsession(self.hass)
             async with timeout(TIMEOUT):
                 _LOGGER.debug("Call Foobar2k")
                 fb2k_api = Foobar2k(session, host, port, TIMEOUT)
