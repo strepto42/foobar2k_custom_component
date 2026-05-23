@@ -76,7 +76,3 @@ async def api_init(hass, host, port, timeout = TIMEOUT):
         return None
 
     return device
-
-async def update_listener(hass, config_entry):
-    """Handle options update."""
-    await hass.config_entries.async_reload(config_entry.entry_id)
