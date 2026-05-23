@@ -76,41 +76,6 @@ class Foobar2kConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         return self._async_get_entry(user_input)
 
-
-    async def create_device(self, host, port=DEFAULT_PORT):
-        try:
-            _LOGGER.debug("create_device")
-            session = aiohttp.ClientSession()
-            with timeout(TIMEOUT):
-                _LOGGER.debug("Create Foobar2k")
-                fb2k_api = await Foobar2k(session, host, port, timeout)
-                await self.async_set_unique_id(fb2k_api.unique_id)
-        except asyncio.TimeoutError:
-            return self.async_show_form(
-                step_id="user",
-                data_schema=self.schema,
-                errors={"base": "device_timeout"},
-            )
-        except web_exceptions.HTTPForbidden:
-            return self.async_show_form(
-                step_id="user", data_schema=self.schema, errors={"base": "forbidden"},
-            )
-        except ClientError:
-            _LOGGER.exception("ClientError")
-            return self.async_show_form(
-                step_id="user", data_schema=self.schema, errors={"base": "device_fail"},
-            )
-        except Exception:  # pylint: disable=broad-except
-            _LOGGER.exception("Unexpected error creating device")
-            return self.async_show_form(
-                step_id="user", data_schema=self.schema, errors={"base": "device_fail"},
-            )
-
-        return self._async_get_entry({
-                CONF_HOST: host,
-                CONF_PORT: port
-            })
- 
     @property
     def schema(self):
         """Return current schema."""
