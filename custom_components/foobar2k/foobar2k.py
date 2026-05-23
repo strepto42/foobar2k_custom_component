@@ -4,6 +4,7 @@ import aiohttp
 import asyncio
 
 from datetime import timedelta
+from urllib.parse import urlencode
 from aiohttp import ClientSession, ServerDisconnectedError
 
 _LOGGER = logging.getLogger(__name__)
@@ -20,6 +21,8 @@ GET_PLAYER_INFO = "/api/player"
 GET_PLAYLIST_ITEMS = "/api/playlists/{0}/items/{1}"
 GET_PLAYLISTS = "/api/playlists"
 GET_ALBUM_ART = "/api/artwork/{0}/{1}"
+GET_BROWSER_ROOTS = "/api/browser/roots"
+GET_BROWSER_ENTRIES = "/api/browser/entries"
 
 HTTP_GET = "GET"
 HTTP_POST = "POST"
@@ -440,6 +443,27 @@ class Foobar2k:
         data = json.loads(response)
         items = data.get("playlistItems", {}).get("items", [])
         return [dict(zip(columns, item.get("columns", []))) for item in items]
+
+    async def browser_roots(self):
+        """List the music-folder roots configured in beefweb's settings."""
+        response = await self.prep_fetch(HTTP_GET, GET_BROWSER_ROOTS)
+        if response is None:
+            return []
+        data = json.loads(response)
+        return list(data.get("roots", []))
+
+    async def browser_entries(self, path):
+        """List directory entries (files + subfolders) under `path`.
+
+        Each entry preserves beefweb's shape — at minimum: name, path,
+        type ('F' or 'D'), size.
+        """
+        endpoint = f"{GET_BROWSER_ENTRIES}?{urlencode({'path': path})}"
+        response = await self.prep_fetch(HTTP_GET, endpoint)
+        if response is None:
+            return []
+        data = json.loads(response)
+        return list(data.get("entries", []))
 
     async def set_playlists(self):
         """ Retrieve all available playlists from player"""
