@@ -23,6 +23,7 @@ GET_PLAYLISTS = "/api/playlists"
 GET_ALBUM_ART = "/api/artwork/{0}/{1}"
 GET_BROWSER_ROOTS = "/api/browser/roots"
 GET_BROWSER_ENTRIES = "/api/browser/entries"
+POST_PLAYLIST_ADD = "/api/playlists/{0}/items/add"
 
 HTTP_GET = "GET"
 HTTP_POST = "POST"
@@ -443,6 +444,19 @@ class Foobar2k:
         data = json.loads(response)
         items = data.get("playlistItems", {}).get("items", [])
         return [dict(zip(columns, item.get("columns", []))) for item in items]
+
+    async def add_to_playlist(self, playlist_id, paths):
+        """Append `paths` (absolute file paths or directories) to the
+        playlist. async=false on beefweb's side so the add is complete
+        before this returns — important for play_media which needs to
+        play the just-added items.
+        """
+        if self._power != POWER_ON:
+            return
+        body = json.dumps({"items": list(paths), "async": False})
+        await self.prep_fetch(
+            HTTP_POST, POST_PLAYLIST_ADD.format(playlist_id), data=body
+        )
 
     async def browser_roots(self):
         """List the music-folder roots configured in beefweb's settings."""
