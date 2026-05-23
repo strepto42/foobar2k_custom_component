@@ -85,7 +85,10 @@ class Foobar2k:
         """Send command via HTTP GET to Foobar2k server."""
         _LOGGER.debug("[Foobar2k] Running fetch GET")
         async with self._session.get("{base_url}{command}".format(
-            base_url=self._base_url, command=command), data=data) as resp_obj:
+            base_url=self._base_url, command=command),
+            data=data,
+            timeout=aiohttp.ClientTimeout(total=self._timeout),
+        ) as resp_obj:
             response = await resp_obj.text()
             if (resp_obj.status == 200 or resp_obj.status == 204):
                 _LOGGER.debug("[Foobar2k] Have a response")
@@ -99,7 +102,10 @@ class Foobar2k:
         """Send command via HTTP POST to Foobar2k server."""
         _LOGGER.debug("[Foobar2k] Running fetch POST")
         async with self._session.post("{base_url}{command}".format(
-            base_url=self._base_url, command=command), data=data) as resp_obj:
+            base_url=self._base_url, command=command),
+            data=data,
+            timeout=aiohttp.ClientTimeout(total=self._timeout),
+        ) as resp_obj:
             response = await resp_obj.text()
             if (resp_obj.status == 200 or resp_obj.status == 204):
                 _LOGGER.debug("[Foobar2k] Have a response")
