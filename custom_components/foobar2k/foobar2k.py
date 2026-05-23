@@ -1,4 +1,3 @@
-import requests
 import logging
 import json
 import aiohttp
@@ -143,7 +142,7 @@ class Foobar2k:
             _LOGGER.debug("[Foobar2k] Doing update() POWER ON")
         except ValueError:
             pass
-        except requests.exceptions.RequestException:
+        except (aiohttp.ClientError, asyncio.TimeoutError):
             # On timeout and connection error, the device is probably off
             self._power = POWER_OFF
             _LOGGER.debug("[Foobar2k] Doing update() POWER OFF")
