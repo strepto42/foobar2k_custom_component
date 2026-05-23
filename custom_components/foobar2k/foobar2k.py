@@ -424,6 +424,23 @@ class Foobar2k:
             await self.prep_fetch(HTTP_POST, POST_PLAYER, data=data)
             self._track_position = position
 
+    async def list_playlist_items(self, playlist_id, offset, count, columns):
+        """Fetch a range of tracks from `playlist_id` with the requested
+        beefweb columns. Returns a list of dicts keyed by the column strings
+        the caller passed in; empty list on failure."""
+        _LOGGER.debug(
+            "[Foobar2k] list_playlist_items pl=%s offset=%d count=%d cols=%s",
+            playlist_id, offset, count, columns,
+        )
+        endpoint = GET_PLAYLIST_ITEMS.format(playlist_id, f"{offset}:{count}")
+        body = json.dumps({"columns": list(columns)})
+        response = await self.prep_fetch(HTTP_GET, endpoint, data=body)
+        if response is None:
+            return []
+        data = json.loads(response)
+        items = data.get("playlistItems", {}).get("items", [])
+        return [dict(zip(columns, item.get("columns", []))) for item in items]
+
     async def set_playlists(self):
         """ Retrieve all available playlists from player"""
         _LOGGER.debug("[Foobar2k] Getting playlists")
