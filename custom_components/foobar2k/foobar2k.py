@@ -79,6 +79,7 @@ class Foobar2k:
         self._playlists = {}
         self._playback_mode = PLAYBACK_MODE_DEFAULT
         self._path = None
+        self._power = POWER_OFF
         self._unique_id = f'{host.replace(".","_")}_{port}'
 
     async def fetch_get(self, command, data):
