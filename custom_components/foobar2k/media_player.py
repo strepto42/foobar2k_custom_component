@@ -124,7 +124,7 @@ class Foobar2kDevice(MediaPlayerEntity):
     @property
     def volume_level(self):
         """Volume level of the media player (0 to 1)."""
-        return float(self._volume) / 100
+        return self._volume
 
     @property
     def media_title(self):
@@ -235,9 +235,9 @@ class Foobar2kDevice(MediaPlayerEntity):
         await self._service.toggle_mute()
 
     async def async_set_volume_level(self, volume):
-        """Send the media player the command for setting the volume."""
+        """Send the media player the command for setting the volume (0..1)."""
         _LOGGER.debug(f"[Media_Player_FB2K] set_volume_level Called [{volume}]")
-        await self._service.set_volume(volume * 100)
+        await self._service.set_volume(volume)
 
     async def async_media_seek(self, position):
         """Send the media player a command for seeking new position in track."""
