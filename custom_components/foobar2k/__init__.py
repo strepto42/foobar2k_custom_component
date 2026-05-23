@@ -5,7 +5,7 @@ import aiohttp
 
 from custom_components.foobar2k.foobar2k import Foobar2k
 import voluptuous as vol
-from aiohttp import ClientSession, ServerDisconnectedError
+from aiohttp import ClientConnectionError, ClientSession, ServerDisconnectedError
 
 from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
 from homeassistant.const import CONF_HOST, CONF_PORT, CONF_TIMEOUT
