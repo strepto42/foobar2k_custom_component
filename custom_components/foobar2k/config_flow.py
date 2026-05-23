@@ -1,28 +1,24 @@
 import asyncio
-import aiohttp
 import logging
 import voluptuous as vol
 
 from async_timeout import timeout
-from custom_components.foobar2k.foobar2k import Foobar2k
-from aiohttp import ClientError, ServerDisconnectedError
-from aiohttp import web_exceptions
+from aiohttp import ClientError, web_exceptions
 
 from homeassistant import config_entries, core
 from homeassistant.const import CONF_HOST, CONF_PORT
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from . import config_flow
+from custom_components.foobar2k.foobar2k import Foobar2k
 from .const import DEFAULT_PORT, DOMAIN, TIMEOUT
 
 _LOGGER = logging.getLogger(__name__)
 
-@config_entries.HANDLERS.register(DOMAIN)
+
 class Foobar2kConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Foobar2k config flow."""
 
     VERSION = 1
-    CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_POLL
 
     @core.callback
     def _async_get_entry(self, data):

@@ -1,38 +1,19 @@
 """Support for Foobar2k api provided by beefweb https://github.com/hyperblast/beefweb."""
 
-from collections import namedtuple
 import logging
-from datetime import timedelta
 
-import voluptuous as vol
-
-from homeassistant.components.media_player import (
-    MediaPlayerEntity)
-
-# https://github.com/home-assistant/home-assistant/blob/dev/homeassistant/components/media_player/const.py
-from homeassistant.components.media_player.const import (
-    MediaPlayerEntityFeature, MediaType,
-    ATTR_APP_NAME, ATTR_MEDIA_ALBUM_ARTIST, ATTR_MEDIA_ALBUM_NAME, ATTR_MEDIA_DURATION, ATTR_MEDIA_PLAYLIST,
-    ATTR_MEDIA_SHUFFLE, ATTR_MEDIA_TITLE, ATTR_MEDIA_TRACK, ATTR_MEDIA_VOLUME_MUTED,
-    ATTR_SOUND_MODE, ATTR_SOUND_MODE_LIST, ATTR_MEDIA_CONTENT_ID)
-
-from homeassistant.const import (
-    CONF_HOST, CONF_NAME, CONF_PORT, CONF_TIMEOUT, STATE_OFF, STATE_ON, STATE_PAUSED, STATE_PLAYING, STATE_UNKNOWN, STATE_IDLE)
-
-from custom_components.foobar2k.foobar2k import (
-    PLAYBACK_MODE_DEFAULT, PLAYBACK_MODE_REPEAT_PLAYLIST, PLAYBACK_MODE_REPEAT_TRACK, PLAYBACK_MODE_RANDOM,
-    PLAYBACK_MODE_SHUFFLE_TRACKS, PLAYBACK_MODE_SHUFFLE_ALBUMS, PLAYBACK_MODE_SHUFFLE_FOLDERS)
-
-import homeassistant.helpers.config_validation as cv
+from homeassistant.components.media_player import MediaPlayerEntity
+from homeassistant.components.media_player.const import MediaPlayerEntityFeature, MediaType
+from homeassistant.const import STATE_IDLE, STATE_PAUSED, STATE_PLAYING, STATE_UNKNOWN
 import homeassistant.util.dt as dt_util
 
-_LOGGER = logging.getLogger(__name__)
-
-DEFAULT_TIMEOUT = 2
-
-from .const import (
-    DOMAIN
+from custom_components.foobar2k.foobar2k import (
+    PLAYBACK_MODE_DEFAULT, PLAYBACK_MODE_RANDOM,
 )
+
+from .const import DOMAIN
+
+_LOGGER = logging.getLogger(__name__)
 
 SUPPORT_FOOBAR_PLAYER = \
     MediaPlayerEntityFeature.NEXT_TRACK | \
@@ -49,8 +30,6 @@ SUPPORT_FOOBAR_PLAYER = \
 
 async def async_setup_entry(hass, entry, async_add_entities):
     """Set up the Foobar 2k platform."""
-    from custom_components.foobar2k.foobar2k import Foobar2k
-
     foobar2k_api = hass.data[DOMAIN].get(entry.entry_id)
     _LOGGER.debug(f"[Media_Player_FB2k] Init {foobar2k_api.host}:{foobar2k_api.port}")
 
@@ -201,20 +180,6 @@ class Foobar2kDevice(MediaPlayerEntity):
         """Return current song full file path"""
         return self._media_path
 
-    # @property
-    # def media_playlist(self):
-    #     """Title of Playlist currently playing."""
-    #     _LOGGER.debug(
-    #         "[Media_Player_FB2K] media_playlist {0}".format(self._playlists))
-    #     if (self._playlists == None or self._playlists == {} or self._current_playlist_id == None):
-    #         _LOGGER.debug("[Media_Player_FB2K] media_playlist == NoName")
-    #         return None
-    #     else:
-    #         name = self._playlists.get(self._current_playlist_id)
-    #         _LOGGER.debug(
-    #             "[Media_Player_FB2K] media_playlist {0}".format(name))
-    #     return name
-
     @property
     def source_list(self):
         """List of available input sources."""
@@ -231,11 +196,6 @@ class Foobar2kDevice(MediaPlayerEntity):
     @property
     def sound_mode_list(self):
         return self._sound_mode_list
-
-    # @property
-    # def should_poll(self):
-    #     """Return True if entity has to be polled for state."""
-    #     return True
 
     async def async_media_play_pause(self):
         """Send the media player the command for play/pause."""
