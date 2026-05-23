@@ -1,7 +1,7 @@
 """Support for Foobar2k api provided by beefweb https://github.com/hyperblast/beefweb."""
 
 import logging
-from urllib.parse import unquote, urlparse
+from urllib.parse import quote, unquote, urlparse
 
 from homeassistant.components.media_player import BrowseMedia, MediaPlayerEntity
 from homeassistant.components.media_player.const import (
@@ -331,7 +331,70 @@ class Foobar2kDevice(MediaPlayerEntity):
                 children_media_class=MediaClass.PLAYLIST,
             )
 
+        if media_content_id == "foobar2k://library":
+            roots = await self._service.browser_roots()
+            children = [
+                BrowseMedia(
+                    media_class=MediaClass.DIRECTORY,
+                    media_content_id=f"foobar2k://library/{quote(r['path'], safe='')}",
+                    media_content_type="directory",
+                    title=r.get("name") or r["path"],
+                    can_play=False,
+                    can_expand=True,
+                )
+                for r in roots
+            ]
+            return BrowseMedia(
+                media_class=MediaClass.DIRECTORY,
+                media_content_id="foobar2k://library",
+                media_content_type="directory",
+                title="Library",
+                can_play=False,
+                can_expand=True,
+                children=children,
+                children_media_class=MediaClass.DIRECTORY,
+            )
+
         parsed = urlparse(media_content_id)
+        if parsed.scheme == URL_SCHEME and parsed.netloc == "library":
+            if not parsed.path or parsed.path == "/":
+                raise ValueError(f"library URL needs a path: {media_content_id!r}")
+            path = unquote(parsed.path.lstrip("/"))
+            entries = await self._service.browser_entries(path)
+            children = []
+            for e in entries:
+                if e.get("type") == "D":
+                    children.append(BrowseMedia(
+                        media_class=MediaClass.DIRECTORY,
+                        media_content_id=f"foobar2k://library/{quote(e['path'], safe='')}",
+                        media_content_type="directory",
+                        title=e.get("name") or e["path"],
+                        can_play=False,
+                        can_expand=True,
+                    ))
+                else:
+                    # File: leverage the existing file:// URL form so
+                    # selecting it routes through async_play_media's
+                    # enqueue-and-play path.
+                    children.append(BrowseMedia(
+                        media_class=MediaClass.MUSIC,
+                        media_content_id=f"foobar2k://file/{quote(e['path'], safe='')}",
+                        media_content_type=MediaType.MUSIC,
+                        title=e.get("name") or e["path"],
+                        can_play=True,
+                        can_expand=False,
+                    ))
+            return BrowseMedia(
+                media_class=MediaClass.DIRECTORY,
+                media_content_id=media_content_id,
+                media_content_type="directory",
+                title=path.rsplit("/", 1)[-1] or path,
+                can_play=False,
+                can_expand=True,
+                children=children,
+                children_media_class=MediaClass.DIRECTORY,
+            )
+
         if parsed.scheme == URL_SCHEME and parsed.netloc == "playlist":
             parts = parsed.path.lstrip("/").split("/")
             if not parts or not parts[0]:

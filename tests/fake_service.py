@@ -30,6 +30,9 @@ class FakeService:
         self.playlist_sizes: dict[str, int] = {}
         # playlist_id → list of column-dicts as list_playlist_items returns
         self.playlist_items: dict[str, list[dict]] = {}
+        # Library browser stubs.
+        self.roots: list[dict] = []
+        self.entries: dict[str, list[dict]] = {}  # path → entries[]
         for k, v in overrides.items():
             setattr(self, k, v)
 
@@ -52,6 +55,14 @@ class FakeService:
         size = self.playlist_sizes.get(playlist_id, 0)
         self.call_log.append(("get_playlist_size", (playlist_id, size)))
         return size
+
+    async def browser_roots(self):
+        self.call_log.append(("browser_roots", ()))
+        return list(self.roots)
+
+    async def browser_entries(self, path):
+        self.call_log.append(("browser_entries", (path,)))
+        return list(self.entries.get(path, []))
 
     async def list_playlist_items(self, playlist_id, offset, count, columns):
         rows = self.playlist_items.get(playlist_id, [])
