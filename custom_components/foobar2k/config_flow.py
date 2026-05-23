@@ -45,13 +45,18 @@ class Foobar2kConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         port = user_input.get(CONF_PORT) or DEFAULT_PORT
         user_input = {**user_input, CONF_PORT: port}
 
+        session = async_get_clientsession(self.hass)
+        fb2k_api = Foobar2k(session, host, port, TIMEOUT)
+        # Reject duplicates *before* contacting the server — saves an HTTP
+        # roundtrip and keeps the AbortFlow out of the connect-error handlers
+        # below (which would otherwise swallow it as "device_fail").
+        await self.async_set_unique_id(fb2k_api.unique_id)
+        self._abort_if_unique_id_configured()
+
         try:
             _LOGGER.debug("create_device")
-            session = async_get_clientsession(self.hass)
             async with timeout(TIMEOUT):
                 _LOGGER.debug("Call Foobar2k")
-                fb2k_api = Foobar2k(session, host, port, TIMEOUT)
-                await self.async_set_unique_id(fb2k_api.unique_id)
                 await fb2k_api.async_update()
         except asyncio.TimeoutError:
             return self.async_show_form(
