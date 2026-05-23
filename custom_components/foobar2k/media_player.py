@@ -7,11 +7,8 @@ from homeassistant.components.media_player.const import MediaPlayerEntityFeature
 from homeassistant.const import STATE_IDLE, STATE_PAUSED, STATE_PLAYING, STATE_UNKNOWN
 import homeassistant.util.dt as dt_util
 
-from custom_components.foobar2k.foobar2k import (
-    PLAYBACK_MODE_DEFAULT, PLAYBACK_MODE_RANDOM,
-)
-
 from .const import DOMAIN
+from .foobar2k import PLAYBACK_MODE_DEFAULT, PLAYBACK_MODE_RANDOM
 
 _LOGGER = logging.getLogger(__name__)
 

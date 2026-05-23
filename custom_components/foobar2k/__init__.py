@@ -10,8 +10,8 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from custom_components.foobar2k.foobar2k import Foobar2k
 from .const import DEFAULT_PORT, DOMAIN, TIMEOUT
+from .foobar2k import Foobar2k
 
 _LOGGER = logging.getLogger(__name__)
 PLATFORMS = ["media_player"]
