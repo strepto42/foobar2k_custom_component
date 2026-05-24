@@ -24,6 +24,17 @@ A Home Assistant Python library to control [foobar2000](http://www.foobar2000.or
 ## Configuration
 
 Configuration is via UI only. Provide the URL and port where Foobar 2000 is running.
+
+### Browsing your music library
+
+The integration exposes Home Assistant's media browser with two top-level branches:
+
+- **Playlists** — every foobar2000 playlist, drillable to individual tracks.
+- **Library** — the file-system folders that **beefweb** is configured to expose.
+
+> **Note:** the Library branch reads from beefweb's own "Music Folders" setting, **not** from foobar2000's media library. If Library shows up empty, open beefweb's settings in foobar2000 (`File → Preferences → Tools → beefweb`) and add one or more music folders there. Foobar2000's library configuration has no effect on what beefweb advertises.
+
+
 * The foobar2k media player should work with any media player front end. It has been tested with the excellent [Minimalistic media card](https://github.com/kalkih/mini-media-player). The settings I use are:
  ```yaml
     - type: custom:mini-media-player
