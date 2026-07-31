@@ -50,6 +50,10 @@ The integration exposes Home Assistant's media browser with two top-level branch
          sound_mode: false
 ```
 
+## License
+
+Released under the [MIT License](LICENSE).
+
 ## Thank you
 
 Big thanks to `ed0zer-projects` who first created a foobar2000 player for Home Assistant. They used `foo_httpcontrol` but I wanted to go with the REST API as supplied by [HyperBlast beefweb web interface for foobar2000](https://github.com/hyperblast/beefweb). In any case I used `ed0zer-projects` implementation as a high level guide. Also thank you `HyperBlast` for the REST Api to foobar2000.
