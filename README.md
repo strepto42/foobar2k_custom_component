@@ -1,6 +1,6 @@
 # foobar2000 Media Player for Home Assistant
 
-[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
+[![hacs_badge](https://img.shields.io/badge/HACS-Default-41BDF5.svg)](https://github.com/hacs/integration)
 
 A Home Assistant Python library to control [foobar2000](http://www.foobar2000.org/) media player from within Home Assistant. It relies on [HyperBlast beefweb web interface for foobar2000](https://github.com/hyperblast/beefweb).
 
@@ -8,13 +8,12 @@ A Home Assistant Python library to control [foobar2000](http://www.foobar2000.or
 
 ### HACS (Recommended)
 
+This integration is in the HACS default catalog, so no custom repository is needed.
+
 1. Ensure [HACS](https://hacs.xyz/) is installed in your Home Assistant instance.
-2. In the HACS panel, go to "Integrations".
-3. Click the three dots in the top right corner and select "Custom repositories".
-4. Add the repository URL `https://github.com/strepto42/foobar2k_custom_component` and select "Integration" as the category.
-5. Click "Add".
-6. Search for "Foobar 2000 Player" and click "Download".
-7. Restart Home Assistant.
+2. In the HACS panel, search for "Foobar 2000 Player".
+3. Click "Download".
+4. Restart Home Assistant.
 
 ### Manual Installation
 
